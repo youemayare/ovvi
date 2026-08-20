@@ -38,7 +38,9 @@ export default function GlobalError({
             marginBottom: "1.5rem",
           }}
         >
-          {error.message || "An unexpected error occurred."}
+          {process.env.NODE_ENV === "development" 
+            ? error.message 
+            : "An unexpected error occurred. Our team has been notified."}
         </p>
         <div style={{ display: "flex", gap: "0.75rem" }}>
           <button

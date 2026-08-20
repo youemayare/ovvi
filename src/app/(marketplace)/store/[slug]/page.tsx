@@ -110,7 +110,7 @@ export default async function PublicStorefrontPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
     <div className="bg-stone-50 min-h-screen pb-24">
       {/* Banner */}

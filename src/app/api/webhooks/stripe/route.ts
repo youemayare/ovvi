@@ -3,7 +3,7 @@ import { stripe } from "@/lib/stripe";
 import type Stripe from "stripe";
 import { db } from "@/db";
 import { orders, stores, users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { sendOrderConfirmationBuyer, sendNewOrderSeller } from "@/lib/email";
 import { format } from "date-fns";
 
@@ -28,10 +28,13 @@ export async function POST(req: NextRequest) {
     const orderId = session.metadata?.orderId;
     if (!orderId) return NextResponse.json({ received: true });
 
-    // Move order to CONFIRMED_PAID
-    await db.update(orders)
+    // Move order to CONFIRMED_PAID idempotently
+    const result = await db.update(orders)
       .set({ status: "CONFIRMED_PAID", updatedAt: new Date() })
-      .where(eq(orders.id, orderId));
+      .where(and(eq(orders.id, orderId), eq(orders.status, "PENDING_PAYMENT")))
+      .returning({ updatedId: orders.id });
+
+    if (result.length === 0) return NextResponse.json({ received: true });
 
     // Fetch full order for emails
     const order = await db.query.orders.findFirst({

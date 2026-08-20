@@ -8,12 +8,24 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(5, "1 m"), // Max 5 requests per minute
+});
 
 export async function createStore(values: StoreOnboardingValues) {
   // 1. Authenticate user
   const { userId } = await auth();
   if (!userId) {
     throw new Error("Unauthorized");
+  }
+
+  const { success } = await ratelimit.limit(`ratelimit_store_${userId}`);
+  if (!success) {
+    throw new Error("Too many requests. Please try again later.");
   }
 
   // 2. Validate input
@@ -74,6 +86,11 @@ export async function updateStore(storeId: string, values: StoreUpdateValues) {
   const { userId } = await auth();
   if (!userId) {
     throw new Error("Unauthorized");
+  }
+
+  const { success } = await ratelimit.limit(`ratelimit_store_${userId}`);
+  if (!success) {
+    throw new Error("Too many requests. Please try again later.");
   }
 
   const dbUser = await db.query.users.findFirst({

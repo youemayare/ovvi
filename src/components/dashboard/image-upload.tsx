@@ -35,7 +35,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         </div>
       ) : (
         <CldUploadWidget 
-          uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ovvi_products"}
+          signatureEndpoint="/api/sign-cloudinary-params"
           onSuccess={onUpload}
         >
           {({ open }) => {

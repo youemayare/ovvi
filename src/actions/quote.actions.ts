@@ -8,6 +8,13 @@ import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { Client } from "@upstash/workflow";
 import { addHours } from "date-fns";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, "1 m"), // Max 10 requests per minute
+});
 
 const workflowClient = new Client({ token: process.env.QSTASH_TOKEN || "" });
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -25,6 +32,9 @@ interface QuoteInput {
 export async function createQuote(data: QuoteInput) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+
+  const { success } = await ratelimit.limit(`ratelimit_quotes_${userId}`);
+  if (!success) throw new Error("Too many requests. Please try again later.");
 
   const dbUser = await db.query.users.findFirst({
     where: (u) => eq(u.clerkId, userId),
@@ -64,6 +74,9 @@ export async function createQuote(data: QuoteInput) {
 export async function sendQuote(quoteId: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+
+  const { success } = await ratelimit.limit(`ratelimit_quotes_${userId}`);
+  if (!success) throw new Error("Too many requests. Please try again later.");
 
   const dbUser = await db.query.users.findFirst({
     where: (u) => eq(u.clerkId, userId),

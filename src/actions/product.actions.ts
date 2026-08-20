@@ -146,7 +146,10 @@ export async function updateProduct(productId: string, values: ProductFormValues
         name: v.name,
         priceModifier: Math.round(v.priceModifier * 100),
         isActive: true,
-      }).where(eq(productVariants.id, v.id));
+      }).where(and(
+        eq(productVariants.id, v.id),
+        eq(productVariants.productId, productId)
+      ));
     } else {
       await db.insert(productVariants).values({
         productId,

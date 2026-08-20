@@ -46,6 +46,10 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderStatus)
   }
 
   // Update status (CANCELLED handled separately below to support auto-refund)
+  if (newStatus === "REFUNDED") {
+    throw new Error("Refunds cannot be triggered manually. You must CANCEL the order to initiate a refund.");
+  }
+
   if (newStatus !== "CANCELLED") {
     await db.update(orders)
       .set({

@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import { orders, orderItems, stores, users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { orders, orderItems, stores, users, products, productVariants } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Stripe from "stripe";
@@ -10,6 +10,13 @@ import { nanoid } from "nanoid";
 import { format } from "date-fns";
 import { sendOrderConfirmationBuyer, sendNewOrderSeller } from "@/lib/email";
 import { Client } from "@upstash/workflow";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(5, "1 m"), // Max 5 requests per minute
+});
 
 const workflowClient = new Client({ token: process.env.QSTASH_TOKEN || "" });
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -42,6 +49,11 @@ export async function createOrder(data: OrderInput) {
     throw new Error("You must be signed in to place an order.");
   }
 
+  const { success } = await ratelimit.limit(`ratelimit_orders_${userId}`);
+  if (!success) {
+    throw new Error("Too many requests. Please try again later.");
+  }
+
   let dbUser = await db.query.users.findFirst({
     where: (u) => eq(u.clerkId, userId),
   });
@@ -70,8 +82,37 @@ export async function createOrder(data: OrderInput) {
     throw new Error("Store not found");
   }
 
-  // Calculate totals
-  const subtotal = data.items.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
+  // Calculate totals securely using DB data
+  let subtotal = 0;
+  const verifiedItems = [];
+
+  for (const item of data.items) {
+    const dbProduct = await db.query.products.findFirst({ 
+      where: eq(products.id, item.productId) 
+    });
+    
+    if (!dbProduct) {
+      throw new Error(`Product not found: ${item.productId}`);
+    }
+    
+    let realPrice = dbProduct.basePrice;
+
+    if (item.variantId) {
+      const dbVariant = await db.query.productVariants.findFirst({
+        where: and(
+          eq(productVariants.id, item.variantId),
+          eq(productVariants.productId, item.productId)
+        )
+      });
+      if (dbVariant) {
+        realPrice += dbVariant.priceModifier;
+      }
+    }
+    
+    subtotal += realPrice * item.quantity;
+    verifiedItems.push({ ...item, unitPrice: realPrice });
+  }
+
   const deliveryFee = data.fulfillmentType === "DELIVERY" ? (store.deliveryFee || 0) : 0;
   // Ovvi takes a 10% platform fee
   const platformFee = Math.round(subtotal * 0.10);
@@ -99,7 +140,7 @@ export async function createOrder(data: OrderInput) {
   }).returning();
 
   // Insert Order Items
-  const itemsToInsert = data.items.map(item => ({
+  const itemsToInsert = verifiedItems.map(item => ({
     orderId: order.id,
     productId: item.productId,
     variantId: item.variantId,
@@ -118,7 +159,7 @@ export async function createOrder(data: OrderInput) {
       new Date(data.scheduledDate + "T12:00:00"),
       "EEEE, MMMM d, yyyy"
     );
-    const emailItems = data.items.map((i) => ({
+    const emailItems = verifiedItems.map((i) => ({
       name: i.variantName ? `${i.productName} (${i.variantName})` : i.productName,
       quantity: i.quantity,
       totalPrice: i.unitPrice * i.quantity,
@@ -191,7 +232,7 @@ export async function createOrder(data: OrderInput) {
         orderId: order.id,
       },
       line_items: [
-        ...data.items.map(item => ({
+        ...verifiedItems.map(item => ({
           price_data: {
             currency: "usd",
             product_data: {
