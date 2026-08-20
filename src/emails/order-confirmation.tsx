@@ -48,7 +48,7 @@ export function OrderConfirmationEmail({
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Text style={logo}>Ovvi 🎂</Text>
+            <Text style={logo}>Ovvi</Text>
           </Section>
 
           {/* Hero */}

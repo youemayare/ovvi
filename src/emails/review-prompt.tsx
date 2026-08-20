@@ -18,7 +18,7 @@ export function ReviewPromptEmail({ buyerName, storeName, orderNumber, reviewUrl
       <Body style={main}>
         <Container style={container}>
           <Section style={{ textAlign: "center" }}>
-            <Text style={logo}>Ovvi 🎂</Text>
+            <Text style={logo}>Ovvi</Text>
           </Section>
           <Section style={heroSection}>
             <Text style={stars}>⭐⭐⭐⭐⭐</Text>

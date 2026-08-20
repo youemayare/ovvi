@@ -54,7 +54,7 @@ export function OrderStatusEmail({
       <Body style={main}>
         <Container style={container}>
           <Section style={{ textAlign: "center" }}>
-            <Text style={logo}>Ovvi 🎂</Text>
+            <Text style={logo}>Ovvi</Text>
           </Section>
 
           <Section style={heroSection}>

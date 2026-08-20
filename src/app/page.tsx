@@ -91,7 +91,7 @@ export default async function LandingPage() {
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-stone-200">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="font-display text-xl font-bold text-primary-600">
-            Ovvi 🎂
+            Ovvi
           </Link>
           <nav className="hidden sm:flex items-center gap-6 text-sm text-stone-600">
             <Link href="/marketplace" className="hover:text-stone-900 transition-colors">Browse Bakers</Link>
@@ -277,7 +277,7 @@ export default async function LandingPage() {
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <footer className="border-t border-stone-200 py-10 bg-white">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-stone-500">
-          <Link href="/" className="font-display font-bold text-stone-800">Ovvi 🎂</Link>
+          <Link href="/" className="font-display font-bold text-stone-800">Ovvi</Link>
           <div className="flex gap-6">
             <Link href="/marketplace" className="hover:text-stone-800 transition-colors">Browse</Link>
             <Link href="/seller/onboarding" className="hover:text-stone-800 transition-colors">Sell</Link>

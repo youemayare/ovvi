@@ -51,7 +51,7 @@ export function NewOrderSellerEmail({
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
-            <Text style={logo}>Ovvi 🎂</Text>
+            <Text style={logo}>Ovvi</Text>
           </Section>
 
           <Section style={heroSection}>

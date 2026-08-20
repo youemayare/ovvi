@@ -47,7 +47,7 @@ export default function MarketplaceLayout({
       <footer className="border-t border-stone-200 py-6 sm:py-8 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-stone-400">
           <Link href="/" className="font-display font-bold text-stone-700 text-base">
-            Ovvi 🎂
+            Ovvi
           </Link>
           <div className="flex items-center gap-5">
             <Link href="/marketplace" className="hover:text-stone-600 transition-colors">Browse</Link>
