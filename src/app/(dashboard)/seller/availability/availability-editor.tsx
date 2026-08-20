@@ -116,17 +116,19 @@ export function AvailabilityEditor({ initialRules, initialBlackouts }: Availabil
         </div>
         <div className="divide-y divide-stone-100">
           {rules.map((rule) => (
-            <div key={rule.dayOfWeek} className="px-6 py-4 flex items-center gap-6">
-              <div className="w-32 font-medium text-stone-700">{DAYS[rule.dayOfWeek]}</div>
-              <Switch
-                checked={rule.isAvailable}
-                onCheckedChange={() => toggleDay(rule.dayOfWeek)}
-              />
-              <span className={`text-sm ${rule.isAvailable ? "text-green-600" : "text-stone-400"}`}>
-                {rule.isAvailable ? "Open" : "Closed"}
-              </span>
+            <div key={rule.dayOfWeek} className="px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-28 sm:w-32 font-medium text-stone-700">{DAYS[rule.dayOfWeek]}</div>
+                <Switch
+                  checked={rule.isAvailable}
+                  onCheckedChange={() => toggleDay(rule.dayOfWeek)}
+                />
+                <span className={`text-sm ${rule.isAvailable ? "text-green-600" : "text-stone-400"}`}>
+                  {rule.isAvailable ? "Open" : "Closed"}
+                </span>
+              </div>
               {rule.isAvailable && (
-                <div className="flex items-center gap-2 ml-auto">
+                <div className="flex items-center gap-3 sm:ml-auto mt-2 sm:mt-0 bg-stone-50 sm:bg-transparent p-3 sm:p-0 rounded-lg">
                   <Label className="text-sm text-stone-500 whitespace-nowrap">Max orders</Label>
                   <Input
                     type="number"
@@ -134,7 +136,7 @@ export function AvailabilityEditor({ initialRules, initialBlackouts }: Availabil
                     placeholder="Unlimited"
                     value={rule.maxOrders ?? ""}
                     onChange={(e) => setMaxOrders(rule.dayOfWeek, e.target.value)}
-                    className="w-28 h-8 text-sm"
+                    className="flex-1 sm:w-28 h-8 text-sm bg-white"
                   />
                 </div>
               )}
@@ -197,24 +199,25 @@ export function AvailabilityEditor({ initialRules, initialBlackouts }: Availabil
           )}
         </div>
 
-        <div className="px-6 py-4 bg-stone-50 border-t border-stone-100">
-          <div className="flex gap-3 flex-wrap">
+        <div className="px-4 sm:px-6 py-4 bg-stone-50 border-t border-stone-100">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Input
               type="date"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
-              className="w-44"
+              className="w-full sm:w-44 bg-white"
             />
             <Input
               placeholder="Reason (optional)"
               value={newReason}
               onChange={(e) => setNewReason(e.target.value)}
-              className="flex-1 min-w-[180px]"
+              className="flex-1 min-w-[180px] bg-white"
             />
             <Button
               onClick={handleAddBlackout}
               disabled={!newDate || isPending}
               variant="outline"
+              className="w-full sm:w-auto bg-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               Block Date
