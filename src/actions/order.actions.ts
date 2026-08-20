@@ -95,7 +95,11 @@ export async function createOrder(data: OrderInput) {
       throw new Error(`Product not found: ${item.productId}`);
     }
     
-    let realPrice = dbProduct.basePrice;
+    if (dbProduct.basePrice === null) {
+      throw new Error(`Product ${item.productId} has no base price and cannot be purchased directly.`);
+    }
+    
+    let realPrice: number = dbProduct.basePrice;
 
     if (item.variantId) {
       const dbVariant = await db.query.productVariants.findFirst({
